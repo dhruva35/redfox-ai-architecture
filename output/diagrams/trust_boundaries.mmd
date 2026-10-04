@@ -1,0 +1,55 @@
+graph TB
+    subgraph "TRUST BOUNDARY 1: Operator network"
+        USER["Tester / Lead<br/>(browser)"]
+    end
+
+    subgraph "TRUST BOUNDARY 2: Platform control plane"
+        direction TB
+        GW["API gateway<br/>Auth + rate limit"]
+        SM["Session manager"]
+        AC["Agent Core<br/>(Planner role)"]
+        MG["Model gateway"]
+        SG["Scope guard ⛨<br/>(Policy engine)"]
+        AG["Approval gate ⛨"]
+        RAG["RAG pipeline"]
+        DB[("Engagement DB<br/>(encrypted at rest)")]
+        AUDIT[("Audit log<br/>(append-only)")]
+    end
+
+    subgraph "TRUST BOUNDARY 3: Sandboxed execution"
+        direction TB
+        TR["Tool runner<br/>(ephemeral container)"]
+        EC["Egress controller ⛨<br/>(allow-list only)"]
+    end
+
+    subgraph "TRUST BOUNDARY 4: External / untrusted"
+        TARGET["Target systems<br/>(in-scope only)"]
+        LLM["LLM providers<br/>(API calls)"]
+    end
+
+    USER -->|"TLS + JWT"| GW
+    GW --> SM
+    SM --> AC
+    AC -->|"prompt"| MG
+    MG -->|"TLS + API key"| LLM
+    AC -->|"every action"| SG
+    SG -->|"risk:intrusive+"| AG
+    AG -->|"approval"| AC
+    AC -->|"tool request"| TR
+    TR -->|"filtered egress"| EC
+    EC -->|"in-scope only"| TARGET
+    TARGET -->|"response (UNTRUSTED DATA)"| EC
+    EC -->|"sanitised output"| TR
+    TR -->|"structured result"| AC
+    AC --> RAG
+    AC --> DB
+    AC --> AUDIT
+
+    style SG fill:#e94560,stroke:#fff,color:#fff
+    style AG fill:#e94560,stroke:#fff,color:#fff
+    style EC fill:#e94560,stroke:#fff,color:#fff
+    style TARGET fill:#ff6b35,stroke:#fff,color:#fff
+    style LLM fill:#ff6b35,stroke:#fff,color:#fff
+
+    linkStyle 10 stroke:#e94560,stroke-width:3px
+    linkStyle 12 stroke:#e94560,stroke-width:3px

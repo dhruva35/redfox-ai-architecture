@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redfox AI — Autonomous Penetration Testing Agent Cockpit</title>
+  <meta name="description" content="Production-grade AI Penetration Testing Agent demonstration featuring a 5-layer autonomous architecture with independent verification and zero false positives.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="theme-white-red">
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <span class="fox-icon">🦊</span>
+        <div class="brand-text">
+          <span class="brand-title">REDFOX AI</span>
+          <span class="brand-subtitle">Autonomous Security Core v1.0</span>
+        </div>
+      </div>
+      <div id="system-status-pill" class="status-pill idle">
+        <span class="pulse-dot"></span>
+        <span id="system-status-text">SYSTEM READY</span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="engine-badge-container">
+        <span class="engine-label">LLM ENGINE:</span>
+        <span id="active-engine-badge" class="engine-badge scripted">Methodology Mode</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button id="btn-audio-toggle" class="btn-icon" title="Toggle Sound Feedback">
+        <span id="audio-icon">🔊</span>
+      </button>
+      <button id="btn-open-settings" class="btn-secondary" title="Configure API Keys">
+        <span>⚙️ Keys &amp; Config</span>
+      </button>
+      <a href="https://github.com" target="_blank" class="btn-ghost" title="View Source Architecture">
+        <span>Documentation</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-layout">
+
+    <!-- Mission Control Bar -->
+    <section class="command-bar glass-panel" aria-label="Target Configuration">
+      <div class="command-group target-group">
+        <label for="input-target-url" class="field-label">TARGET URL / ENDPOINT</label>
+        <div class="input-with-presets">
+          <input type="url" id="input-target-url" value="http://httpbin.org" placeholder="https://example.com" spellcheck="false">
+          <div class="preset-pills">
+            <button type="button" class="preset-btn active" data-url="http://httpbin.org" id="preset-httpbin">httpbin.org</button>
+            <button type="button" class="preset-btn" data-url="http://testphp.vulnweb.com" id="preset-vulnweb">testphp.vulnweb.com</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="command-group engine-select-group">
+        <label for="select-llm-engine" class="field-label">AI REASONING BACKEND</label>
+        <select id="select-llm-engine">
+          <option value="auto">Auto (Groq &gt; OpenAI &gt; Scripted)</option>
+          <option value="groq">Groq (LLaMA-3.3 70B Versatile - Free &amp; Fast)</option>
+          <option value="openai">OpenAI (GPT-4o-mini)</option>
+          <option value="scripted">Deterministic Methodology (Offline / Safe)</option>
+        </select>
+      </div>
+
+      <div class="command-group steps-group">
+        <label for="input-max-steps" class="field-label">MAX BUDGET: <span id="steps-counter-val">6</span> STEPS</label>
+        <input type="range" id="input-max-steps" min="2" max="10" value="6" step="1">
+      </div>
+
+      <div class="command-actions">
+        <button id="btn-start-scan" class="btn-primary-neon">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-text">LAUNCH PEN-TEST</span>
+        </button>
+        <button id="btn-stop-scan" class="btn-danger-neon hidden">
+          <span class="btn-icon">🛑</span>
+          <span class="btn-text">ABORT RUN</span>
+        </button>
+        <button id="btn-reset-view" class="btn-secondary">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-text">RESET</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 5-Layer Interactive Architecture Visualizer -->
+    <section class="pipeline-section glass-panel" aria-label="Redfox AI Architecture Pipeline">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-badge">CORE WORKFLOW</span>
+          <h2 class="section-title">The 5-Layer Autonomous Agent Pipeline</h2>
+        </div>
+        <div class="step-progress-indicator">
+          <span>PROGRESS:</span>
+          <strong id="live-step-label">Step 0 / 6</strong>
+          <div class="progress-bar-track">
+            <div id="live-step-bar" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-flow" id="pipeline-nodes-container">
+        <!-- Node 1: Planner -->
+        <div class="pipeline-node" id="node-planner" data-layer="Layer 2">
+          <div class="node-glow"></div>
+          <div class="node-layer-tag">LAYER 2</div>
+          <div class="node-icon">🧠</div>
+          <div class="node-name">PLANNER</div>
+          <div class="node-desc">Hypothesis &amp; Tool Selection</div>
+          <div class="node-status-badge">STANDBY</div>
+        </div>
+
+        <div class="pipeline-arrow" id="arrow-1">
+          <span class="arrow-ray"></span>
+          <span class="arrow-head">➔</span>
+        </div>
+
+        <!-- Node 2: Scope Guard -->
+        <div class="pipeline-node" id="node-scope_check" data-layer="Layer 1 &amp; 4">
+          <div class="node-glow"></div>
+          <div class="node-layer-tag">LAYERS 1 &amp; 4</div>
+          <div class="node-icon">🔒</div>
+          <div class="node-name">SCOPE GUARD</div>
+          <div class="node-desc">Deterministic Policy Gate</div>
+          <div class="node-status-badge">STANDBY</div>
+        </div>
+
+        <div class="pipeline-arrow" id="arrow-2">
+          <span class="arrow-ray"></span>
+          <span class="arrow-head">➔</span>
+        </div>
+
+        <!-- Node 3: Sandboxed Tool Runner -->
+        <div class="pipeline-node" id="node-execute_tool" data-layer="Layer 4">
+          <div class="node-glow"></div>
+          <div class="node-layer-tag">LAYER 4</div>
+          <div class="node-icon">⚙️</div>
+          <div class="node-name">SANDBOXED RUNNER</div>
+          <div class="node-desc">Ephemeral Containerized Tools</div>
+          <div class="node-status-badge">STANDBY</div>
+        </div>
+
+        <div class="pipeline-arrow" id="arrow-3">
+          <span class="arrow-ray"></span>
+          <span class="arrow-head">➔</span>
+        </div>
+
+        <!-- Node 4: Reflector -->
+        <div class="pipeline-node" id="node-reflector" data-layer="Layer 2">
+          <div class="node-glow"></div>
+          <div class="node-layer-tag">LAYER 2</div>
+          <div class="node-icon">🔍</div>
+          <div class="node-name">REFLECTOR</div>
+          <div class="node-desc">Output Parsing &amp; Claims</div>
+          <div class="node-status-badge">STANDBY</div>
+        </div>
+
+        <div class="pipeline-arrow" id="arrow-4">
+          <span class="arrow-ray"></span>
+          <span class="arrow-head">➔</span>
+        </div>
+
+        <!-- Node 5: Independent Verifier -->
+        <div class="pipeline-node" id="node-verify" data-layer="Layer 3">
+          <div class="node-glow"></div>
+          <div class="node-layer-tag">LAYER 3</div>
+          <div class="node-icon">🔬</div>
+          <div class="node-name">VERIFIER</div>
+          <div class="node-desc">Isolated Test &amp; SHA-256 Custody</div>
+          <div class="node-status-badge">STANDBY</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <div class="dashboard-tabs">
+      <button class="tab-btn active" data-tab="tab-cockpit" id="btn-tab-cockpit">
+        <span>📡 Live Mission Control</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-findings" id="btn-tab-findings">
+        <span>🛡️ Findings &amp; Proof of Exploit</span>
+        <span class="tab-count-pill" id="tab-findings-counter">0</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-architecture" id="btn-tab-architecture">
+        <span>📐 5-Layer Architecture Deep Dive</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: LIVE MISSION CONTROL -->
+    <section id="tab-cockpit" class="tab-content active">
+      <div class="grid-cockpit">
+
+        <!-- Column 1: Agent State & Telemetry -->
+        <div class="cockpit-col left-col">
+          <!-- Active Monologue Card -->
+          <div class="card glass-panel" id="card-agent-monologue">
+            <div class="card-header">
+              <span class="card-tag cyan">LAYER 2 TELEMETRY</span>
+              <h3 class="card-title">Agent Cognitive State</h3>
+            </div>
+            <div class="card-body">
+              <div class="meta-row">
+                <span class="meta-label">CURRENT OBJECTIVE:</span>
+                <span class="meta-value highlight" id="telemetry-objective">Awaiting test initialization...</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">ACTIVE TOOL:</span>
+                <span class="meta-value mono yellow" id="telemetry-tool">None</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-label">LLM REASONING / RATIONALE:</span>
+                <div class="reasoning-box mono" id="telemetry-reasoning">
+                  Ready. Press "Launch Pen-Test" to run automated reconnaissance on target.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scope Enforcement Gate Card -->
+          <div class="card glass-panel" id="card-scope-gate">
+            <div class="card-header">
+              <span class="card-tag yellow">LAYER 1 &amp; 4 SAFETY GATE</span>
+              <h3 class="card-title">Deterministic Scope Guard</h3>
+            </div>
+            <div class="card-body">
+              <div class="scope-status-display">
+                <div class="scope-decision-box" id="scope-decision-box">
+                  <span class="scope-icon" id="scope-verdict-icon">🛡️</span>
+                  <div>
+                    <div class="scope-verdict-text" id="scope-verdict-text">GUARD ARMED</div>
+                    <div class="scope-reason-text" id="scope-reason-text">All outbound actions validated deterministically before firing.</div>
+                  </div>
+                </div>
+                <div class="scope-metrics">
+                  <div class="sm-item">
+                    <span class="sm-label">Allowed Scope:</span>
+                    <span class="sm-val mono" id="scope-allowed-list">httpbin.org</span>
+                  </div>
+                  <div class="sm-item">
+                    <span class="sm-label">Max Risk Class:</span>
+                    <span class="sm-val green">READ_ONLY (Safe)</span>
+                  </div>
+                  <div class="sm-item">
+                    <span class="sm-label">Gate Latency:</span>
+                    <span class="sm-val mono" id="scope-latency">&lt; 1 ms</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tool Execution Terminal Card -->
+          <div class="card glass-panel" id="card-tool-output">
+            <div class="card-header">
+              <span class="card-tag purple">LAYER 4 CONTAINER SANDBOX</span>
+              <h3 class="card-title">Tool Execution Output</h3>
+              <span class="latency-badge" id="tool-latency-badge">0 ms</span>
+            </div>
+            <div class="card-body terminal-body">
+              <div class="terminal-bar">
+                <span class="term-dot red"></span>
+                <span class="term-dot yellow"></span>
+                <span class="term-dot green"></span>
+                <span class="term-title" id="terminal-tool-name">sandboxed_executor@redfox-agent:~</span>
+              </div>
+              <pre class="json-code-box" id="tool-output-json"><code>// Sandboxed tool output will be streamed here in real time...</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Verifier Chamber & Event Logs -->
+        <div class="cockpit-col right-col">
+
+          <!-- Independent Verifier Chamber Card -->
+          <div class="card glass-panel verifier-card" id="card-verifier-chamber">
+            <div class="card-header">
+              <span class="card-tag green">LAYER 3 ISOLATED VERIFIER</span>
+              <h3 class="card-title">Independent Verification Chamber</h3>
+              <span class="zero-fp-badge">0% FALSE POSITIVE GUARANTEE</span>
+            </div>
+            <div class="card-body">
+              <div class="verifier-live-box" id="verifier-live-container">
+                <div class="v-empty-state" id="verifier-empty-state">
+                  <span class="v-icon">🔬</span>
+                  <p>Awaiting suspected finding claims from the Reflector...</p>
+                  <small>The Verifier independently reproduces claims in an isolated environment with separate HTTP client.</small>
+                </div>
+                <div class="v-active-state hidden" id="verifier-active-state">
+                  <div class="v-claim-header">
+                    <span class="v-claim-badge" id="v-current-sev">HIGH</span>
+                    <strong id="v-current-title">Claim Title</strong>
+                  </div>
+                  <div class="v-progress-line">
+                    <span class="v-pulse-loader"></span>
+                    <span id="v-progress-status">Executing independent reproduction check...</span>
+                  </div>
+                  <div class="v-reasoning-quote" id="v-current-reasoning">
+                    Verifier reasoning will appear here.
+                  </div>
+                  <div class="v-hash-line">
+                    <span class="v-hash-label">EVIDENCE SHA-256:</span>
+                    <code class="v-hash-val" id="v-current-hash">Calculating...</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Event Log Stream -->
+          <div class="card glass-panel" id="card-live-logs">
+            <div class="card-header">
+              <span class="card-tag cyan">REAL-TIME TELEMETRY</span>
+              <h3 class="card-title">Mission Event Log</h3>
+              <button class="btn-mini" id="btn-clear-logs">Clear</button>
+            </div>
+            <div class="card-body log-container" id="live-log-stream">
+              <div class="log-entry system">
+                <span class="log-time">00:00:00</span>
+                <span class="log-badge system">INIT</span>
+                <span class="log-msg">Redfox AI Pen-Test Engine initialized. Ready to launch.</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: FINDINGS & VULNERABILITY REPORT -->
+    <section id="tab-findings" class="tab-content">
+      <div class="findings-layout">
+
+        <!-- Executive Stat Counter Cards -->
+        <div class="stats-grid">
+          <div class="stat-card glass-panel glow-green">
+            <div class="stat-number green" id="stat-confirmed-count">0</div>
+            <div class="stat-label">CONFIRMED VULNERABILITIES</div>
+            <div class="stat-sub">Independently proven &amp; reproducible</div>
+          </div>
+          <div class="stat-card glass-panel glow-red">
+            <div class="stat-number red" id="stat-rejected-count">0</div>
+            <div class="stat-label">FALSE POSITIVES FILTERED</div>
+            <div class="stat-sub">Caught &amp; defeated by Verifier</div>
+          </div>
+          <div class="stat-card glass-panel glow-cyan">
+            <div class="stat-number cyan" id="stat-tools-count">0</div>
+            <div class="stat-label">SANDBOXED EXECUTIONS</div>
+            <div class="stat-sub">Zero escapes / pure scoped actions</div>
+          </div>
+          <div class="stat-card glass-panel glow-purple">
+            <div class="stat-number purple" id="stat-hashes-count">0</div>
+            <div class="stat-label">CHAIN OF CUSTODY HASHES</div>
+            <div class="stat-sub">Cryptographic SHA-256 proof bundles</div>
+          </div>
+        </div>
+
+        <!-- Export Actions Toolbar -->
+        <div class="report-actions-bar glass-panel">
+          <div class="report-meta">
+            <strong id="report-target-meta">Target: http://httpbin.org</strong>
+            <span class="sep">•</span>
+            <span id="report-status-meta">Status: Idle</span>
+          </div>
+          <div class="report-buttons">
+            <button id="btn-download-md" class="btn-primary-neon">
+              <span>📥 Download Markdown Report</span>
+            </button>
+            <button id="btn-download-json" class="btn-secondary">
+              <span>📄 Download Audit JSON</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Findings List Table/Cards -->
+        <div class="findings-container" id="findings-cards-list">
+          <div class="no-findings-splash" id="no-findings-splash">
+            <div class="splash-icon">🛡️</div>
+            <h3>No Verified Findings Logged Yet</h3>
+            <p>Launch an assessment in the Live Mission Control tab to discover and independently verify vulnerabilities on the target.</p>
+          </div>
+        </div>
+
+        <!-- Defeated False Positives Section -->
+        <div class="rejected-section glass-panel hidden" id="rejected-findings-container">
+          <div class="rejected-header">
+            <span class="fp-badge">DEFENSE AGAINST HALLUCINATIONS</span>
+            <h3 class="rejected-title">Defeated False Positives (Filtered by Verifier)</h3>
+          </div>
+          <div class="rejected-list" id="rejected-findings-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: ARCHITECTURE BLUEPRINT -->
+    <section id="tab-architecture" class="tab-content">
+      <div class="arch-layout glass-panel">
+        <div class="arch-header">
+          <span class="section-badge">SYSTEM ARCHITECTURE</span>
+          <h2>The Redfox AI Autonomous Agent Architecture</h2>
+          <p class="arch-subtitle">
+            How a 5-layer decoupled design achieves 0% false positives, strict scope compliance, and repeatable enterprise security assessments.
+          </p>
+        </div>
+
+        <div class="arch-layers-grid">
+          <!-- Layer 1 -->
+          <div class="arch-card">
+            <div class="arch-card-header">
+              <span class="layer-num">LAYER 1</span>
+              <h3>User &amp; Engagement Interface</h3>
+            </div>
+            <p>
+              Where clients schedule assessments, define targets, and upload assets. Built by the Fullstack Engineering team via robust REST/GraphQL APIs.
+            </p>
+            <ul class="arch-list">
+              <li>Engagement parameters (Target, Scope boundaries, Asset types)</li>
+              <li>Operational constraints (Read-only, Active scan, Maximum execution time)</li>
+              <li>Interactive dashboard with real-time audit event streaming</li>
+            </ul>
+          </div>
+
+          <!-- Layer 2 -->
+          <div class="arch-card highlight-card">
+            <div class="arch-card-header">
+              <span class="layer-num">LAYER 2</span>
+              <h3>Agent Core (LangGraph Reasoning Loop)</h3>
+            </div>
+            <p>
+              The cognitive loop that plans, acts, observes, and reflects. Implemented in <strong>LangGraph</strong> with a structured typed state model rather than chat history.
+            </p>
+            <ul class="arch-list">
+              <li><strong>Planner:</strong> Hypothesizes next logical pen-test action using Groq/OpenAI</li>
+              <li><strong>Scope Guard:</strong> Deterministic gate ensuring strict policy conformance</li>
+              <li><strong>Reflector:</strong> Extracts evidence claims without hallucination</li>
+            </ul>
+          </div>
+
+          <!-- Layer 3 -->
+          <div class="arch-card highlight-card">
+            <div class="arch-card-header">
+              <span class="layer-num">LAYER 3</span>
+              <h3>Independent Verifier &amp; Chain of Custody</h3>
+            </div>
+            <p>
+              The breakthrough module that guarantees <strong>0% false positives</strong>. Runs in an isolated environment with zero access to the agent's chain-of-thought.
+            </p>
+            <ul class="arch-list">
+              <li>Receives only the <em>claim</em> and <em>evidence parameters</em></li>
+              <li>Independently executes an isolated test to confirm or reject the vulnerability</li>
+              <li>Computes a cryptographic <strong>SHA-256 fingerprint</strong> for verifiable legal chain of custody</li>
+            </ul>
+          </div>
+
+          <!-- Layer 4 -->
+          <div class="arch-card">
+            <div class="arch-card-header">
+              <span class="layer-num">LAYER 4</span>
+              <h3>Execution Sandbox (Containerized Tool Runner)</h3>
+            </div>
+            <p>
+              Where security tools actually execute. In production, tools execute within ephemeral, network-isolated containers destroyed immediately after use.
+            </p>
+            <ul class="arch-list">
+              <li>Read-only vs active scanning isolation</li>
+              <li>Strict CPU, memory, and timeout caps per execution</li>
+              <li>Normalized JSON output schema across all disparate security tools</li>
+            </ul>
+          </div>
+
+          <!-- Layer 5 -->
+          <div class="arch-card">
+            <div class="arch-card-header">
+              <span class="layer-num">LAYER 5</span>
+              <h3>Skills &amp; Knowledge (Methodology Skill Packs)</h3>
+            </div>
+            <p>
+              Declarative YAML skill packs that teach the agent specific testing methodologies (Web Apps, APIs, Cloud Infra, Active Directory) without retraining the model.
+            </p>
+            <ul class="arch-list">
+              <li>OWASP Top 10 web assessment recipes</li>
+              <li>Tool capability registry and parameter bindings</li>
+              <li>Dynamic context injection based on engagement phase</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Settings / API Keys Modal -->
+  <div class="modal-backdrop hidden" id="modal-settings">
+    <div class="modal-window glass-panel" role="dialog" aria-modal="true" aria-labelledby="modal-settings-title">
+      <div class="modal-header">
+        <h3 id="modal-settings-title">⚙️ API Keys &amp; Engine Settings</h3>
+        <button class="btn-close" id="btn-close-settings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-groq-key">
+            Groq API Key <span class="badge-free">FREE &amp; FAST (Recommended)</span>
+          </label>
+          <input type="password" id="input-groq-key" placeholder="gsk_..." autocomplete="off">
+          <small class="form-help">
+            Get a free key in 10 seconds at <a href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a>. Powers LLaMA-3.3 70B Versatile at 300+ tokens/sec.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="input-openai-key">OpenAI API Key (Optional)</label>
+          <input type="password" id="input-openai-key" placeholder="sk-..." autocomplete="off">
+          <small class="form-help">
+            Powers GPT-4o-mini. Note: If running on a corporate network with proxies, Groq or Scripted mode is recommended.
+          </small>
+        </div>
+
+        <div class="notice-box">
+          <strong>No API key? No problem!</strong>
+          <p>The agent includes a built-in deterministic methodology mode that runs the complete 5-layer loop and discovers real vulnerabilities without any external keys.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btn-cancel-settings">Cancel</button>
+        <button type="button" class="btn-primary-neon" id="btn-save-settings">Save Credentials</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+graph TB
+    subgraph "GCP Project: redfox-ai-platform"
+        subgraph "VPC: platform-vpc"
+            subgraph "Cloud Run services"
+                API["API gateway<br/>(Cloud Run)"]
+                AGENT["Agent service<br/>(Cloud Run)"]
+                VERIFIER["Verifier service<br/>(Cloud Run)"]
+                RAGSVC["RAG service<br/>(Cloud Run)"]
+            end
+
+            subgraph "GKE Autopilot: tool-runners"
+                TR1["Tool runner pod<br/>(ephemeral)"]
+                TR2["Tool runner pod<br/>(ephemeral)"]
+                TRN["Tool runner pod<br/>(ephemeral)"]
+            end
+
+            subgraph "Data layer"
+                CSQL[("Cloud SQL<br/>PostgreSQL + pgvector")]
+                GCS[("Cloud Storage<br/>Artifacts + evidence")]
+                SM_SEC["Secret Manager<br/>(credentials, API keys)"]
+            end
+
+            subgraph "Messaging"
+                PUBSUB["Pub/Sub<br/>(job queue + events)"]
+                CT["Cloud Tasks<br/>(scheduled work)"]
+            end
+        end
+
+        subgraph "Observability"
+            CL["Cloud Logging"]
+            CM["Cloud Monitoring"]
+            CT2["Cloud Trace"]
+            MLFLOW["MLflow on Cloud Run<br/>(model/prompt registry)"]
+        end
+
+        subgraph "Eval environment (isolated VPC)"
+            EVPC["eval-vpc<br/>(no internet egress)"]
+            LABS["Eval labs<br/>(GKE pods)"]
+        end
+
+        IAM["IAM + Workload Identity"]
+        AR["Artifact Registry<br/>(container images)"]
+        CB["Cloud Build<br/>(CI/CD pipeline)"]
+    end
+
+    subgraph "External"
+        LLM["LLM providers<br/>(Gemini, GPT, Claude)"]
+        TARGET["In-scope targets"]
+        CDN["UI static assets<br/>(Cloud CDN)"]
+    end
+
+    CDN --> API
+    API --> PUBSUB
+    PUBSUB --> AGENT
+    AGENT --> VERIFIER
+    AGENT --> RAGSVC
+    RAGSVC --> CSQL
+    AGENT --> CSQL
+    AGENT --> GCS
+    AGENT --> SM_SEC
+    AGENT --> PUBSUB
+    AGENT -->|"spawn"| TR1
+    TR1 --> TARGET
+    AGENT --> LLM
+    AGENT --> CL
+    AGENT --> CM
+    CB --> AR
+
+    style API fill:#16213e,stroke:#00b4d8,color:#fff
+    style AGENT fill:#533483,stroke:#e94560,color:#fff
+    style VERIFIER fill:#533483,stroke:#e94560,color:#fff
+    style TR1 fill:#0f3460,stroke:#e94560,color:#fff
+    style TR2 fill:#0f3460,stroke:#e94560,color:#fff
+    style TRN fill:#0f3460,stroke:#e94560,color:#fff
+    style CSQL fill:#1a1a2e,stroke:#00b4d8,color:#fff
+    style GCS fill:#1a1a2e,stroke:#00b4d8,color:#fff
+    style EVPC fill:#e94560,stroke:#fff,color:#fff

@@ -1,0 +1,39 @@
+sequenceDiagram
+    participant AC as Agent Core
+    participant SG as Scope Guard
+    participant TR as Tool Runner
+    participant VER as Verifier
+    participant HU as Human Reviewer
+    participant DB as Finding Store
+
+    AC->>AC: Suspects finding (e.g. SQL injection)
+    AC->>DB: Create finding (status: SUSPECTED)
+    AC->>DB: Attach evidence (raw output, request/response, timestamps)
+
+    AC->>VER: Submit claim + evidence bundle
+    Note over VER: Verifier runs in isolated context.<br/>Sees only the claim and evidence.<br/>Cannot access Agent Core conversation.
+
+    VER->>SG: Request reproduction action
+    SG->>SG: Validate action against scope
+    SG-->>VER: Action approved
+
+    VER->>TR: Execute reproduction (different path)
+    TR-->>VER: Tool output
+
+    alt Finding reproduced
+        VER->>DB: Update status: CONFIRMED
+        VER->>DB: Attach independent evidence + confidence score
+        VER->>AC: Verification result: CONFIRMED
+    else Finding not reproduced
+        VER->>DB: Update status: NEEDS_HUMAN_REVIEW
+        VER->>DB: Attach reproduction attempt details
+        VER->>HU: Flag for human review
+        HU->>DB: Update status: CONFIRMED or REJECTED
+        HU-->>AC: Human decision
+    else Verifier determines false positive
+        VER->>DB: Update status: REJECTED
+        VER->>DB: Attach rejection reasoning
+        VER->>AC: Verification result: REJECTED
+    end
+
+    AC->>AC: Update engagement state and continue

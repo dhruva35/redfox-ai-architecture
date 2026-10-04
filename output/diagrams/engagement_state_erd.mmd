@@ -1,0 +1,128 @@
+erDiagram
+    ENGAGEMENT ||--o{ SCOPE_RULE : "defines"
+    ENGAGEMENT ||--o{ ASSET : "targets"
+    ENGAGEMENT {
+        uuid id PK
+        string name
+        string client_name
+        enum status
+        datetime start_time
+        datetime end_time
+        json budget_limits
+        string assessment_type
+    }
+
+    SCOPE_RULE {
+        uuid id PK
+        uuid engagement_id FK
+        enum rule_type
+        string target_pattern
+        enum permission
+        json time_window
+        string notes
+    }
+
+    ASSET ||--o{ SERVICE : "exposes"
+    ASSET {
+        uuid id PK
+        uuid engagement_id FK
+        string address
+        enum asset_type
+        json metadata
+        datetime discovered_at
+        uuid discovered_by_action FK
+    }
+
+    SERVICE ||--o{ HYPOTHESIS : "subject of"
+    SERVICE {
+        uuid id PK
+        uuid asset_id FK
+        string protocol
+        int port
+        string product
+        string version
+        json banner
+        datetime discovered_at
+    }
+
+    CREDENTIAL {
+        uuid id PK
+        uuid engagement_id FK
+        string username
+        string secret_ref
+        enum cred_type
+        enum source
+        uuid discovered_by_action FK
+        datetime discovered_at
+    }
+
+    HYPOTHESIS ||--o{ ACTION : "tested by"
+    HYPOTHESIS {
+        uuid id PK
+        uuid engagement_id FK
+        uuid service_id FK
+        string description
+        enum status
+        float confidence
+        string cwe_id
+        datetime created_at
+    }
+
+    ACTION ||--o{ OBSERVATION : "produces"
+    ACTION {
+        uuid id PK
+        uuid engagement_id FK
+        uuid hypothesis_id FK
+        string tool_name
+        json tool_input
+        enum risk_class
+        enum status
+        int step_number
+        datetime started_at
+        datetime completed_at
+        int token_cost
+    }
+
+    OBSERVATION {
+        uuid id PK
+        uuid action_id FK
+        json structured_output
+        string raw_output_ref
+        enum observation_type
+        datetime created_at
+    }
+
+    FINDING ||--o{ EVIDENCE : "supported by"
+    FINDING ||--o{ ATTACK_PATH : "part of"
+    FINDING {
+        uuid id PK
+        uuid engagement_id FK
+        uuid hypothesis_id FK
+        string title
+        string description
+        enum severity
+        enum status
+        float confidence_score
+        string cwe_id
+        string cvss_vector
+        datetime created_at
+        datetime verified_at
+    }
+
+    EVIDENCE {
+        uuid id PK
+        uuid finding_id FK
+        uuid action_id FK
+        enum evidence_type
+        string artifact_ref
+        string hash_sha256
+        datetime captured_at
+    }
+
+    ATTACK_PATH {
+        uuid id PK
+        uuid engagement_id FK
+        string description
+        json step_sequence
+        enum impact_level
+    }

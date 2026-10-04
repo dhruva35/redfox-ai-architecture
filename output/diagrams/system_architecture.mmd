@@ -1,0 +1,40 @@
+graph TB
+    subgraph L1["Layer 1: Operator & Control Portal"]
+        direction LR
+        UI["Web Dashboard<br/>(React / Next.js)"] <--> GW["FastAPI Gateway<br/>(REST & WebSockets)"]
+        GW <--> AG["Human-in-the-Loop<br/>1-Click Approvals"]
+    end
+
+    subgraph L2["Layer 2: Agent Orchestration Engine (LangGraph)"]
+        direction LR
+        AC["Primary Agent Core<br/>(Planner & Executor)"] <--> VER["Independent Verifier<br/>(Zero-Bias Validator)"]
+        AC <--> LLM["LLM Router<br/>(Claude 3.5 / GPT-4o)"]
+    end
+
+    subgraph L3["Layer 3: Safety & Sandboxed Execution"]
+        direction LR
+        SG["Deterministic Scope Guard<br/>(IP/CIDR/Regex Firewall)"] --> SB["Tool Execution Sandbox<br/>(Ephemeral Docker / gVisor)"]
+        SB --> TOOLS["Security Tooling<br/>(Nmap, Nuclei, ffuf)"]
+    end
+
+    subgraph L4["Layer 4: Knowledge, State & Persistence"]
+        direction LR
+        PG["PostgreSQL 16<br/>(Engagement Graph State)"] --- REDIS["Redis<br/>(Pub/Sub Telemetry)"]
+        PG --- RAG["Qdrant Vector DB<br/>(CVEs, MITRE ATT&CK)"]
+        PG --- AUDIT["Audit Trail<br/>(SHA-256 Chain)"]
+    end
+
+    L1 <-->|"Telemetry & Commands"| L2
+    L2 -->|"Target Requests"| L3
+    L2 <-->|"State & Context"| L4
+    L3 -->|"Raw Tool Outputs"| L2
+
+    classDef l1 fill:#0f172a,stroke:#3b82f6,color:#fff
+    classDef l2 fill:#1e293b,stroke:#8b5cf6,color:#fff
+    classDef l3 fill:#0f172a,stroke:#e11d48,color:#fff
+    classDef l4 fill:#1e293b,stroke:#10b981,color:#fff
+
+    class UI,GW,AG l1
+    class AC,VER,LLM l2
+    class SG,SB,TOOLS l3
+    class PG,REDIS,RAG,AUDIT l4

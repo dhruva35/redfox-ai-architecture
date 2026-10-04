@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant SM as Session Manager
+    participant AC as Agent Core
+    participant SR as Skill Registry
+    participant TR as Tool Registry
+    participant RAG as RAG Pipeline
+    participant KB as Knowledge Base
+
+    SM->>AC: Start session (assessment_type: "web_app")
+    AC->>SR: Request skill pack for "web_app"
+    SR->>SR: Look up manifest: skill_web_app.yaml
+
+    Note over SR: Manifest contains:<br/>- methodology steps<br/>- allowed tools<br/>- knowledge namespaces<br/>- risk policy overrides<br/>- prompt templates<br/>- eval scenarios
+
+    SR-->>AC: Return SkillPack object
+
+    AC->>TR: Load tools from skill allow-list
+    Note over TR: Tools: httpx, nuclei,<br/>ffuf, sqlmap, nikto,<br/>burp_api, custom_crawl
+
+    TR->>TR: Validate tool versions and sandbox profiles
+    TR-->>AC: ToolSet ready
+
+    AC->>RAG: Configure retrieval namespaces
+    Note over RAG: Namespaces:<br/>- owasp_top_10<br/>- owasp_wstg<br/>- cwe_web<br/>- redfox_web_playbook
+
+    RAG->>KB: Load embedding indices for namespaces
+    KB-->>RAG: Indices loaded
+
+    RAG-->>AC: RAG configured
+
+    AC->>AC: Initialize engagement state
+    AC->>AC: Load methodology from skill pack
+    AC->>AC: Begin reasoning loop with skill context
+
+    Note over AC: Skill pack loaded.<br/>Agent now has:<br/>1. Domain methodology<br/>2. Curated tool set<br/>3. Relevant knowledge<br/>4. Risk policy<br/>5. Prompt templates

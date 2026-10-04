@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber
+    participant OP as Human Tester
+    participant AC as Agent Core (LangGraph)
+    participant SG as Scope Guard
+    participant SB as Docker Sandbox
+    participant DB as State & Graph DB
+    participant VR as Verifier AI
+
+    Note over AC,DB: 1. PLAN & ORIENT
+    AC->>DB: Query current assets & open ports
+    DB-->>AC: Discovered attack surface
+    AC->>AC: Select next highest-yield target & tool
+
+    Note over AC,SG: 2. SAFETY & SCOPE CHECK
+    AC->>SG: Intercept target IP / domain
+    alt Out-of-Scope Target
+        SG-->>AC: HARD BLOCK (Execution Aborted)
+    else Intrusive Action
+        SG->>OP: Prompt 1-Click Approval
+        OP-->>AC: Approved by Tester
+    else Safe Passive Action
+        SG-->>AC: Allowed (Pre-Approved)
+    end
+
+    Note over AC,SB: 3. EXECUTE & PARSE
+    AC->>SB: Run tool (Nmap / Nuclei / ffuf)
+    SB-->>AC: Raw tool output (JSON/XML)
+    AC->>DB: Parse structured facts (Hosts, Services)
+
+    Note over AC,VR: 4. DUAL-AGENT VERIFICATION
+    opt Potential Vulnerability Suspected
+        AC->>VR: Submit target & vulnerability claim
+        Note over VR: Isolated context (no prior bias)
+        VR->>SB: Execute independent PoC reproduction
+        SB-->>VR: PoC response
+        alt Reproduced Successfully
+            VR->>DB: Record CONFIRMED Finding (+ Evidence)
+        else Unconfirmed / False Alarm
+            VR->>OP: Flag for Manual Review
+        end
+    end
