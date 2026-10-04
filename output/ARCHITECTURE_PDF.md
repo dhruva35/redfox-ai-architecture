@@ -190,7 +190,7 @@ The platform is designed cloud-native for Google Cloud Platform (GCP) or AWS wit
 ---
 
 <div style="text-align: center; margin-top: 8px; font-size: 11px;">
-  <strong>Candidate Contact & Portfolio</strong>: Gangari Dhruvaveer &nbsp;|&nbsp; <a href="https://github.com/dhruva35">GitHub: github.com/dhruva35</a>
+  <strong>Candidate Contact & Portfolio</strong>: Gangari Dhruvaveer &nbsp;|&nbsp; <a href="https://github.com/dhruva35/redfox-ai-architecture">GitHub: github.com/dhruva35/redfox-ai-architecture</a>
 </div>
 
 
